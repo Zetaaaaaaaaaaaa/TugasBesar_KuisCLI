@@ -1,2 +1,4 @@
 Zahid,20
 Zahid,80
+Dhana,80
+walid,40
