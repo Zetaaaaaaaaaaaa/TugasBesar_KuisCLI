@@ -1,33 +1,47 @@
-def baca_data():
+import tkinter as tk
+from tkinter import messagebox
+
+def tampilkan_leaderboard_gui():
     try:
-        with open("peserta.txt", "r") as f:
-            data = [line.strip().split(",") for line in f.readlines()]
-            return [[x[0], int(x[1])] for x in data]
+        with open("peserta.txt", "r") as file:
+            data = [line.strip().split(',') for line in file.readlines() if line.strip()]
+        data.sort(key=lambda x: int(x[1]), reverse=True)
     except FileNotFoundError:
-        return []
+        messagebox.showinfo("Info", "Belum ada data peserta.")
+        return
 
-def tampilkan_leaderboard():
-    data = baca_data()
-    data = selection_sort(data)
-    print("\n--- Leaderboard ---")
-    for i, (nama, skor) in enumerate(data, 1):
-        print(f"{i}. {nama} - {skor} poin")
+    window = tk.Toplevel()
+    window.title("Leaderboard")
+    tk.Label(window, text="Leaderboard Peserta", font=('Arial', 14)).pack(pady=10)
 
-def selection_sort(data):
-    for i in range(len(data)):
-        max_idx = i
-        for j in range(i+1, len(data)):
-            if data[j][1] > data[max_idx][1]:
-                max_idx = j
-        data[i], data[max_idx] = data[max_idx], data[i]
-    return data
+    for i, (nama, skor) in enumerate(data[:10], start=1):
+        tk.Label(window, text=f"{i}. {nama} - {skor}").pack(anchor='w')
 
-def cari_peserta():
-    nama_dicari = input("Masukkan nama peserta: ")
-    data = baca_data()
-
-    for nama, skor in data:
-        if nama.lower() == nama_dicari.lower():
-            print(f"Ditemukan! {nama} - {skor} poin")
+def cari_peserta_gui():
+    def cari():
+        nama_dicari = entry.get().strip().lower()
+        if not nama_dicari:
+            messagebox.showwarning("Peringatan", "Masukkan nama terlebih dahulu.")
             return
-    print("Peserta tidak ditemukan.")
+
+        try:
+            with open("peserta.txt", "r") as file:
+                data = [line.strip().split(',') for line in file.readlines() if line.strip()]
+            hasil = [f"{nama} - {skor}" for nama, skor in data if nama_dicari in nama.lower()]
+        except FileNotFoundError:
+            messagebox.showinfo("Info", "Belum ada data peserta.")
+            return
+
+        if hasil:
+            hasil_text.set("\n".join(hasil))
+        else:
+            hasil_text.set("Tidak ditemukan.")
+
+    window = tk.Toplevel()
+    window.title("Cari Peserta")
+    tk.Label(window, text="Masukkan Nama Peserta", font=('Arial', 12)).pack(pady=5)
+    entry = tk.Entry(window)
+    entry.pack(pady=5)
+    tk.Button(window, text="Cari", command=cari).pack(pady=5)
+    hasil_text = tk.StringVar()
+    tk.Label(window, textvariable=hasil_text, justify='left').pack(pady=10)
